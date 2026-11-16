@@ -1,12 +1,13 @@
 const { Router } = require('express');
 const { obtenerProductos, crearProducto } = require('../controllers/productoController');
+const { verificarAdmin } = require('../middleware/authMiddleware');
 
 const router = Router();
 
-// Ruta para consultar el catálogo: GET /api/productos
+// GET /api/productos -> Público (cualquiera ve el catálogo)
 router.get('/', obtenerProductos);
 
-// Ruta para agregar un producto: POST /api/productos
-router.post('/', crearProducto);
+// POST /api/productos -> Protegido (SOLO el administrador con token puede agregar)
+router.post('/', verificarAdmin, crearProducto);
 
 module.exports = router;

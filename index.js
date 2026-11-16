@@ -1,9 +1,11 @@
+
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config({ quiet: true });
 
 const clienteRoutes = require('./routes/clienteRoutes');
 const productoRoutes = require('./routes/productoRoutes'); // <-- Importar rutas de productos
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,6 +17,7 @@ app.use(express.json());
 // Registrar Rutas de la API
 app.use('/api/clientes', clienteRoutes);
 app.use('/api/productos', productoRoutes); // <-- Registrar endpoint de productos
+app.use('/api/auth', authRoutes);
 
 // Ruta de bienvenida
 app.get('/', (req, res) => {
