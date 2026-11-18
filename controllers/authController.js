@@ -76,7 +76,73 @@ const loginUsuario = async (req, res) => {
     }
 };
 
+// Obtener todos los usuarios (GET /api/auth/usuarios)
+const obtenerUsuarios = async (req, res) => {
+    try {
+        const resultado = await pool.query('SELECT id, nombre, correo, rol FROM usuarios ORDER BY id DESC');
+        res.json(resultado.rows);
+    } catch (error) {
+        console.error('Error al obtener usuarios:', error);
+        res.status(500).json({ error: 'Error al obtener los usuarios' });
+    }
+};
+
+// Obtener un usuario por ID (GET /api/auth/usuarios/:id)
+const obtenerUsuarioPorId = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const resultado = await pool.query('SELECT id, nombre, correo, rol FROM usuarios WHERE id = $1', [id]);
+        if (resultado.rows.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+        res.json(resultado.rows[0]);
+    } catch (error) {
+        console.error('Error al obtener usuario:', error);
+        res.status(500).json({ error: 'Error al obtener el usuario' });
+    }
+};
+
+// Actualizar un usuario (PUT /api/auth/usuarios/:id)
+const actualizarUsuario = async (req, res) => {
+    const { id } = req.params;
+    const { nombre, correo, rol } = req.body;
+    try {
+        const query = `
+      UPDATE usuarios 
+      SET nombre = $1, correo = $2, rol = COALESCE($3, rol) 
+      WHERE id = $4 RETURNING id, nombre, correo, rol;
+    `;
+        const resultado = await pool.query(query, [nombre, correo, rol, id]);
+        if (resultado.rows.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+        res.json({ mensaje: 'Usuario actualizado', usuario: resultado.rows[0] });
+    } catch (error) {
+        console.error('Error al actualizar usuario:', error);
+        res.status(500).json({ error: 'Error al actualizar el usuario' });
+    }
+};
+
+// Eliminar un usuario (DELETE /api/auth/usuarios/:id)
+const eliminarUsuario = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const resultado = await pool.query('DELETE FROM usuarios WHERE id = $1 RETURNING id, nombre, correo, rol', [id]);
+        if (resultado.rows.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+        res.json({ mensaje: 'Usuario eliminado correctamente', usuario: resultado.rows[0] });
+    } catch (error) {
+        console.error('Error al eliminar usuario:', error);
+        res.status(500).json({ error: 'Error al eliminar el usuario' });
+    }
+};
+
 module.exports = {
     registrarUsuario,
-    loginUsuario
+    loginUsuario,
+    obtenerUsuarios,
+    obtenerUsuarioPorId,
+    actualizarUsuario,
+    eliminarUsuario
 };
